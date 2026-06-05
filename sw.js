@@ -1,11 +1,3 @@
-/*
-Directorio Digital de Emergencias
-Cuerpo de Bomberos Voluntarios de Cubarral
-
-Copyright © 2026 Carlos Ruge
-Todos los derechos reservados.
-*/
-
 const CACHE_NAME = "directorio-emergencias-v2.4";
 
 const urlsToCache = [
