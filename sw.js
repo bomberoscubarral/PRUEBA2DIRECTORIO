@@ -1,4 +1,4 @@
-const CACHE_NAME = "directorio-emergencias-v2.4.1";
+const CACHE_NAME = "directorio-emergencias-v2.4.2";
 
 const urlsToCache = [
   "./",
@@ -86,33 +86,27 @@ self.addEventListener("fetch", event => {
 
   if (event.request.mode === "navigate") {
 
-    event.respondWith(
+  event.respondWith(
 
-      caches.match("./index.html")
+    caches.match(event.request)
 
-        .then(cachedPage => {
+      .then(response => {
 
-          if (cachedPage) {
+        return response || caches.match("./index.html");
 
-            return cachedPage;
+      })
 
-          }
+      .then(response => {
 
-          return fetch(event.request);
+        return response || fetch(event.request);
 
-        })
+      })
 
-        .catch(() => {
+  );
 
-          return caches.match("./index.html");
+  return;
 
-        })
-
-    );
-
-    return;
-
-  }
+}
 
   // Demás recursos
 
