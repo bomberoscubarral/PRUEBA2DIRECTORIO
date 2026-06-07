@@ -1,14 +1,18 @@
-const CACHE_NAME = "directorio-emergencias-v2.4.3";
+// Directorio Digital de Emergencias
+// Cuerpo de Bomberos Voluntarios de Cubarral
+
+// Copyright © 2026 Carlos Ruge
+// Todos los derechos reservados.
+
+const CACHE_NAME = "directorio-emergencias-v2.5";
 
 const urlsToCache = [
   "./",
   "./index.html",
   "./manifest.json",
-
   "./favicon.png",
   "./preview.jpg",
   "./herocubarral.jpg",
-
   "./logobomberos.png",
   "./logopolicia.png",
   "./logohospital.png",
@@ -16,143 +20,76 @@ const urlsToCache = [
   "./logobiter7.png",
   "./logollanogas.png",
   "./logoemsa.png",
-
   "./icon-192.png",
   "./icon-512.png",
-
   "./qr-directorio.png",
-
-  "./app.js",
-
-  "https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap",
-  "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  "./app.js"
 ];
 
-// INSTALACIÓN
 
 self.addEventListener("install", event => {
-
-  self.skipWaiting();
-
+  self.skipWaiting(); 
   event.waitUntil(
-
     caches.open(CACHE_NAME)
       .then(cache => {
-
-        console.log("Guardando archivos para uso offline");
-
+        console.log("Guardando archivos locales críticos para uso offline...");
         return cache.addAll(urlsToCache);
-
       })
-
+      .catch(error => {
+        console.error("Fallo al instalar el caché. Revisa que ninguna imagen dé error 404:", error);
+      })
   );
-
 });
 
-// ACTIVACIÓN
 
 self.addEventListener("activate", event => {
-
   event.waitUntil(
-
     caches.keys().then(keys => {
-
       return Promise.all(
-
         keys.map(key => {
-
           if (key !== CACHE_NAME) {
-
+            console.log("Borrando versión de caché antigua:", key);
             return caches.delete(key);
-
           }
-
         })
-
       );
-
     })
-
   );
-
-  self.clients.claim();
-
+  self.clients.claim(); 
 });
 
-// FETCH
 
 self.addEventListener("fetch", event => {
 
-  // Navegación principal
-
-  if (event.request.mode === "navigate") {
-
-  event.respondWith(
-
-    caches.match(event.request)
-
-      .then(response => {
-
-        return response || caches.match("./index.html");
-
-      })
-
-      .then(response => {
-
-        return response || fetch(event.request);
-
-      })
-
-  );
-
-  return;
-
-}
-
-  // Demás recursos
+  if (event.request.method !== "GET" || !event.request.url.startsWith("http")) {
+    return;
+  }
 
   event.respondWith(
-
     caches.match(event.request)
-
       .then(cachedResponse => {
-
+       
         if (cachedResponse) {
-
           return cachedResponse;
-
         }
 
+      
         return fetch(event.request)
-
           .then(networkResponse => {
-
-            const responseClone =
-              networkResponse.clone();
-
-            caches.open(CACHE_NAME)
-
-              .then(cache => {
-
-                cache.put(
-                  event.request,
-                  responseClone
-                );
-
-              });
-
+            
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseClone);
+            });
             return networkResponse;
-
           })
-
           .catch(() => {
-
-            return caches.match(event.request);
-
+            
+            if (event.request.mode === "navigate") {
+             
+              return caches.match("./index.html");
+            }
           });
-
       })
-
   );
-
 });
